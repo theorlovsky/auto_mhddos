@@ -1,17 +1,6 @@
-FROM python:3.10-alpine3.15 as builder
-RUN apk update && apk add git curl gcc libc-dev libffi-dev
-RUN git clone https://github.com/porthole-ascend-cinnamon/mhddos_proxy.git
-WORKDIR /mhddos_proxy
-RUN curl -O https://raw.githubusercontent.com/Aruiem234/mhddosproxy/main/proxies_config.json
-RUN git clone https://github.com/MHProDev/MHDDoS.git
-RUN pip3 install -r MHDDoS/requirements.txt --target dependencies
+FROM ghcr.io/porthole-ascend-cinnamon/mhddos_proxy:latest
 
-FROM python:3.10-alpine3.15
-LABEL org.opencontainers.image.source=https://github.com/Aruiem234/auto_mhddos
-RUN apk add --update --no-cache bash curl sudo
-WORKDIR /root
-COPY --from=builder /mhddos_proxy mhddos_proxy
-ENV PYTHONPATH="${PYTHONPATH}:/root/mhddos_proxy/dependencies"
-COPY runner.sh runner.sh
+RUN apk add --update --no-cache npm && npm i -g zx
+COPY start start
 
-ENTRYPOINT ["bash", "runner.sh"]
+ENTRYPOINT ["zx", "start"]
