@@ -29,8 +29,8 @@ type LongArg = `--${string}=${string}`;
 const TARGETS_URL = 'https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets';
 const SECOND = 1;
 const MINUTE = SECOND * 60;
-const ACTIVE_UDP_TARGETS_REGEX = /^(?=[^#]*udp:\/\/|\budp\b).+$/gim;
-const ACTIVE_NON_UDP_TARGETS_REGEX = /^((?!.*udp)([^#].)+?)$/gim;
+const ACTIVE_UDP_TARGETS_REGEX = /^(?!#)(?=.*udp.*).+?$/gim;
+const ACTIVE_NON_UDP_TARGETS_REGEX = /^(?!#)(?!.*udp.*).+?$/gim;
 
 // ===== ARGUMENTS
 
