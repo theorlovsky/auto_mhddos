@@ -6,6 +6,6 @@ RUN apk add --update --no-cache npm
 WORKDIR /auto_mhddos
 COPY package*.json tsconfig.json ./
 RUN npm ci --production
-COPY start.ts start.ts
+COPY lib lib
 
 ENTRYPOINT ["npm", "start", "--"]

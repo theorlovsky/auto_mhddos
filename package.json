@@ -7,14 +7,16 @@
     "build": "docker build -t ghcr.io/theorlovsky/auto_mhddos:latest .",
     "dev": "docker run -it --rm $(docker build -q .)",
     "deploy": "npm run build && npm run push",
-    "format": "prettier -w start.ts",
+    "format": "prettier -w lib",
     "push": "docker push ghcr.io/theorlovsky/auto_mhddos:latest",
-    "start": "node --loader ts-node/esm --no-warnings start.ts"
+    "start": "node --loader ts-node/esm --no-warnings --experimental-specifier-resolution node lib/start.ts"
   },
   "keywords": [],
   "author": "Alex Orlovsky <alex94orlovsky@gmail.com> (https://github.com/theorlovsky)",
   "license": "MIT",
   "dependencies": {
+    "@types/luxon": "2.3.1",
+    "luxon": "2.3.1",
     "ts-node": "10.7.0",
     "zx": "6.0.6"
   },

