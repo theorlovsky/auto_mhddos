@@ -1,6 +1,9 @@
 FROM ghcr.io/porthole-ascend-cinnamon/mhddos_proxy:latest
 
-RUN apk add --update --no-cache npm && npm i -g zx
-COPY start start
+RUN apk add --update --no-cache npm
+WORKDIR /auto_mhddos
+COPY package*.json tsconfig.json ./
+RUN npm install
+COPY start.ts start.ts
 
-ENTRYPOINT ["zx", "start"]
+ENTRYPOINT ["npm", "start", "--"]
