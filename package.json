@@ -2,7 +2,6 @@
   "name": "auto_mhddos",
   "version": "1.0.0",
   "description": "",
-  "main": "start.ts",
   "type": "module",
   "scripts": {
     "build": "docker build -t ghcr.io/theorlovsky/auto_mhddos:latest .",
@@ -13,8 +12,8 @@
     "start": "node --loader ts-node/esm --no-warnings start.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Alex Orlovsky <alex94orlovsky@gmail.com> (https://github.com/theorlovsky)",
+  "license": "MIT",
   "dependencies": {
     "ts-node": "10.7.0",
     "zx": "6.0.6"
