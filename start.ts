@@ -149,9 +149,10 @@ async function getTargetList(): Promise<string[]> {
     console.log(chalk.yellowBright('There are UDP targets that are not supported by this tool. They were ignored.'));
   }
 
-  // getting all active non-UDP targets and clearing 'runner.py ' if present
-  const targets =
-    fileContent.match(/^((?!.*udp)([^#].)+?)$/gim)?.map((target) => target.replace('runner.py ', '')) || [];
+  // getting all active non-UDP targets
+  const rawTargets = fileContent.match(/^((?!.*udp)([^#].)+?)$/gim) || [];
+  // cleaning out all extra stuff
+  const targets = rawTargets.map((target) => target.replace('runner.py ', '').trim());
 
   return [...new Set(targets)];
 }
