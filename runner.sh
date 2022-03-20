@@ -19,6 +19,7 @@ threads="${1:-1000}"
 threads="-t $threads"
 rpc="${2:-200}"
 rpc="--rpc $rpc"
+debug="${3:-}"
 proxy_interval="-p 600"
 
 #Just in case kill previous copy of mhddos_proxy
@@ -50,7 +51,7 @@ do
             echo "$cmd_line $proxy_interval $threads $rpc"
             
             cd ~/mhddos_proxy
-            python3 runner.py $cmd_line $threads $proxy_interval $rpc --debug&
+            python3 runner.py $cmd_line $threads $proxy_interval $rpc $debug&
             echo -e "Attack started. Wait a few minutes for output"
    done
    
