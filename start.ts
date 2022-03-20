@@ -40,7 +40,7 @@ const {
   config, // we don't need custom targets
   parallel = 1,
   'disable-parallel-limit': disableParallelLimit = false,
-  'restart-interval': restartInterval = MINUTE * 10,
+  'restart-interval': restartInterval = MINUTE * 30,
   debug = true,
   t = 1000,
   ...mhddosArgs
@@ -71,7 +71,7 @@ await startAttack();
 const intervalId = setInterval(async () => {
   await stopAttack();
   await startAttack();
-}, Math.max(MINUTE * 5, restartInterval) * 1000);
+}, Math.max(MINUTE * 15, restartInterval) * 1000);
 
 // properly handling Ctrl+C
 process.on('SIGINT', function () {
