@@ -1,15 +1,15 @@
 {
-  "name": "zx-ts",
+  "name": "auto_mhddos",
   "version": "1.0.0",
   "description": "",
   "main": "start.ts",
   "type": "module",
   "scripts": {
-    "build": "docker build -t ghcr.io/theorlovsky/auto_mhddos:experimental .",
+    "build": "docker build -t ghcr.io/theorlovsky/auto_mhddos:latest .",
     "dev": "docker run -it --rm $(docker build -q .)",
     "deploy": "npm run build && npm run push",
     "format": "prettier -w start.ts",
-    "push": "docker push ghcr.io/theorlovsky/auto_mhddos:experimental",
+    "push": "docker push ghcr.io/theorlovsky/auto_mhddos:latest",
     "start": "node --loader ts-node/esm --no-warnings start.ts"
   },
   "keywords": [],
@@ -17,10 +17,10 @@
   "license": "ISC",
   "dependencies": {
     "ts-node": "10.7.0",
-    "typescript": "4.6.2",
     "zx": "6.0.6"
   },
   "devDependencies": {
-    "prettier": "2.6.0"
+    "prettier": "2.6.0",
+    "typescript": "4.6.2"
   }
 }
