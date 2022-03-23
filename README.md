@@ -37,15 +37,23 @@ Additionally, you can pass several parameters when running a container:
 
 #### `--parallel 3`, `--parallel all`
 
+Default: `1`
+
 How many targets to attack at once. Pass `all` to run attacks on all active targets.
 
 #### `--restart-interval 1h`
 
+Default: `30m`
+
+Minimum: `15m`
+
 How much time to wait before stopping running attacks, re-fetching targets and starting new attacks. Supports `m` (
-minutes), `h` (hours) and `d` (days). Can't be less than 15 minutes. Default is 30 minutes.
+minutes), `h` (hours) and `d` (days).
 
 #### `--debug false`
 
-Don't print logs.
+Default: `true`
+
+Whether to print logs.
 
 #### Supports all other params from the [mhddos_proxy's docs](https://github.com/porthole-ascend-cinnamon/mhddos_proxy#usage) (except targets and `-c`)
