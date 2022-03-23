@@ -1,6 +1,9 @@
 import { Duration, DurationLikeObject } from 'luxon';
-import { MINUTE } from './constants';
-import { assertNever } from './utils/assert-never';
+import { chalk } from 'zx';
+import { MINUTE } from '../constants';
+import { exit } from '../exit';
+import { assertNever } from '../utils/assert-never';
+import { logWithTimePrefix } from '../utils/log-with-time-prefix';
 
 export type RestartIntervalUnit = 'm' | 'h' | 'd';
 
@@ -10,8 +13,9 @@ export function parseRestartInterval(interval: string): Milliseconds {
   const match = interval.match(/(\d+)([mhd])/);
 
   if (match === null) {
-    console.log('not match');
-    process.exit();
+    logWithTimePrefix('error', chalk.redBright('Unknown --restart-interval pattern'));
+    exit(1);
+    return Infinity;
   }
 
   const value = match[1];

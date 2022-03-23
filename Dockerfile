@@ -1,11 +1,18 @@
+FROM node:16.4-alpine3.14 as builder
+
+WORKDIR /builder
+COPY package*.json ./
+RUN npm ci
+COPY tsconfig.json webpack.config.cjs ./
+COPY src src
+RUN npx --no-install webpack --mode production
+
 FROM ghcr.io/porthole-ascend-cinnamon/mhddos_proxy:latest
 
 LABEL org.opencontainers.image.source=https://github.com/theorlovsky/auto_mhddos
 
-RUN apk add --update --no-cache npm
+RUN apk add --update --no-cache curl nodejs
 WORKDIR /auto_mhddos
-COPY package*.json tsconfig.json ./
-RUN npm ci --production
-COPY lib lib
+COPY --from=builder /builder/dist/start.js start.js
 
-ENTRYPOINT ["npm", "start", "--"]
+ENTRYPOINT ["node", "start.js"]
