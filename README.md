@@ -1,3 +1,7 @@
+### 👉 [Українська](./README.uk.md)
+
+### 👉 [Русский](./README.ru.md)
+
 # [auto_mhddos](https://github.com/theorlovsky/auto_mhddos) is an automation tool for [mhddos_proxy](https://github.com/porthole-ascend-cinnamon/mhddos_proxy)
 
 It is a run-and-forget tool that periodically fetches
