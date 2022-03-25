@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
     command:
       - \"--parallel\"
-      - \"${scaling_factor}\"" >> /home/docker-compose.yaml
+      - \"${scaling_factor}\"" > /home/docker-compose.yaml
 
 sudo apt install -y docker-compose
 
