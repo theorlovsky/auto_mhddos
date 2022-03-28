@@ -18,7 +18,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "files": ["src/start.ts"],
-  "include": ["scripts/**/*.ts"],
+  "files": ["src/main.ts"],
   "exclude": ["node_modules"]
 }

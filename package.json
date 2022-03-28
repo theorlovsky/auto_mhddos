@@ -1,32 +1,32 @@
 {
   "name": "auto_mhddos",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
-    "build": "docker build -t ghcr.io/theorlovsky/auto_mhddos:$DOCKER_IMAGE_TAG .",
-    "deploy": "npm run build && npm run push",
-    "format": "prettier -w src",
+    "build": "docker build . -t ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version)",
+    "deploy": "npm run deploy:dev && npm run push:latest",
+    "deploy:dev": "npm run build && npm run push",
+    "format": "prettier -w .",
     "prepare": "husky install",
-    "push": "docker push ghcr.io/theorlovsky/auto_mhddos:$DOCKER_IMAGE_TAG",
-    "start": "npm run build && docker run -it --rm ghcr.io/theorlovsky/auto_mhddos:$DOCKER_IMAGE_TAG"
+    "push": "docker push ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version)",
+    "push:latest": "docker tag ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version) ghcr.io/theorlovsky/auto_mhddos:latest && docker push ghcr.io/theorlovsky/auto_mhddos:latest",
+    "start": "npm run build && docker run -it --rm ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version)",
+    "version": "echo $npm_package_version"
   },
   "keywords": [],
   "author": "Alex Orlovsky <alex94orlovsky@gmail.com> (https://github.com/theorlovsky)",
   "license": "MIT",
   "dependencies": {
     "luxon": "2.3.1",
-    "minimist": "1.2.5",
     "rxjs": "7.5.5",
     "zx": "6.0.6"
   },
   "devDependencies": {
     "@types/luxon": "2.3.1",
-    "@types/minimist": "1.2.2",
     "@types/node": "17.0.22",
     "@types/webpack": "5.28.0",
     "clean-webpack-plugin": "4.0.0",
-    "dotenv": "16.0.0",
     "husky": "7.0.4",
     "prettier": "2.6.0",
     "pretty-quick": "3.1.3",

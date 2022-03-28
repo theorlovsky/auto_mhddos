@@ -4,10 +4,10 @@ const CleanWebpackPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 module.exports = () => {
   return {
     mode: 'production',
-    entry: './src/start.ts',
+    entry: './src/main.ts',
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: 'start.js',
+      filename: 'main.js',
     },
     plugins: [new CleanWebpackPlugin()],
     target: 'node',
@@ -22,6 +22,9 @@ module.exports = () => {
     },
     resolve: {
       extensions: ['.ts', '.js'],
+    },
+    experiments: {
+      topLevelAwait: true,
     },
   };
 };

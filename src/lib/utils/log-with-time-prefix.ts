@@ -12,7 +12,7 @@ export function logWithTimePrefix(levelOrMessage: LogLevel | any, messageOrParam
   const style = level === 'info' ? chalk.reset : level === 'warning' ? chalk.yellowBright : chalk.redBright;
   const message = isLogLevel(levelOrMessage) ? messageOrParam : levelOrMessage;
 
-  console.log(style(`[${DateTime.now().toFormat('TT')} – ${level.toUpperCase()}]:`), message, ...optionalParams);
+  console.log(style(`[${DateTime.now().toFormat('TT')} – ${level.toUpperCase()}]:`, message, ...optionalParams));
 }
 
 function isLogLevel(value: any): value is LogLevel {

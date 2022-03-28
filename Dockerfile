@@ -13,6 +13,6 @@ LABEL org.opencontainers.image.source=https://github.com/theorlovsky/auto_mhddos
 
 RUN apk add --update --no-cache curl nodejs
 WORKDIR /auto_mhddos
-COPY --from=builder /builder/dist/start.js start.js
+COPY --from=builder /builder/dist ./
 
-ENTRYPOINT ["node", "start.js"]
+ENTRYPOINT ["node", "main.js"]
