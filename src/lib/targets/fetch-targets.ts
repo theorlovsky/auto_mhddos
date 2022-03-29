@@ -3,15 +3,16 @@ import { fetch } from 'zx';
 import { retry } from './retry';
 
 export function fetchTargets(): Observable<string> {
-  return defer(() => from(fetch('https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets'))).pipe(
-    switchMap((response) => (response.ok ? response.text() : fetchTargetsError())),
+  return defer(() => from(fetch(process.env.TARGETS_URL!))).pipe(
+    switchMap((response) => (response.ok ? response.text() : fetchTargetsError(response.status))),
     catchError(() => fetchTargetsError()),
     retry(),
   );
 }
 
-function fetchTargetsError(): Observable<never> {
-  return throwError(
-    () => new Error("Failed to fetch targets. Something's wrong with the targets file or your connection. Retrying"),
-  );
+function fetchTargetsError(status: number = 500): Observable<never> {
+  const message =
+    status === 404 ? 'targets file not found' : "something's wrong with the targets file or your connection";
+
+  return throwError(() => new Error(`Failed to fetch targets: ${message}. Retrying`));
 }

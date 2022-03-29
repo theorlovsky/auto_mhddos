@@ -12,7 +12,8 @@
     "push": "docker push ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version)",
     "push:latest": "docker tag ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version) ghcr.io/theorlovsky/auto_mhddos:latest && docker push ghcr.io/theorlovsky/auto_mhddos:latest",
     "start": "npm run build && docker run -it --rm ghcr.io/theorlovsky/auto_mhddos:$(npm --loglevel=silent run version)",
-    "version": "echo $npm_package_version"
+    "version": "echo $npm_package_version",
+    "webpack": "npx --no-install webpack --mode production"
   },
   "keywords": [],
   "author": "Alex Orlovsky <alex94orlovsky@gmail.com> (https://github.com/theorlovsky)",
@@ -23,10 +24,12 @@
     "zx": "6.0.6"
   },
   "devDependencies": {
+    "@types/dotenv-webpack": "7.0.3",
     "@types/luxon": "2.3.1",
     "@types/node": "17.0.22",
     "@types/webpack": "5.28.0",
     "clean-webpack-plugin": "4.0.0",
+    "dotenv-webpack": "7.1.0",
     "husky": "7.0.4",
     "prettier": "2.6.0",
     "pretty-quick": "3.1.3",

@@ -3,9 +3,9 @@ FROM node:16.4-alpine3.14 as builder
 WORKDIR /builder
 COPY package*.json ./
 RUN npm ci
-COPY tsconfig.json webpack.config.cjs ./
+COPY tsconfig.json webpack.config.cjs .env .env.example ./
 COPY src src
-RUN npx --no-install webpack --mode production
+RUN npm run webpack
 
 FROM ghcr.io/porthole-ascend-cinnamon/mhddos_proxy:latest
 
