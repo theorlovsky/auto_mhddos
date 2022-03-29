@@ -4,13 +4,17 @@
 
 # [auto_mhddos](https://github.com/theorlovsky/auto_mhddos) – інструмент для автоматизації роботи [mhddos_proxy](https://github.com/porthole-ascend-cinnamon/mhddos_proxy)
 
-Інструмент по типу "запусти та забудь". Він сам періодично буде
+Цей інструмент під час роботи періодично буде
 підтягувати [цілі](https://raw.githubusercontent.com/Aruiem234/auto_mhddos/main/runner_targets)
-від [Українського Жнеця](https://t.me/ukrainian_reaper_ddos) та атакувати їх.
+від спільноти [Український Жнець](https://t.me/ukrainian_reaper_ddos) та атакувати їх. Вам не потрібно власноруч перезапускати контейнер.
 
 ## Встановлення
 
-Встановіть Docker з [офіційного сайта](https://docs.docker.com/get-docker/) або будь-яким іншим методом.
+Встановіть Docker:
+
+- [Windows](https://docs.docker.com/desktop/windows/install/)
+- [Linux](https://docs.docker.com/engine/install/#server)
+- [Mac](https://docs.docker.com/desktop/mac/install/)
 
 ВАЖЛИВО: в залежності від обраного метода, вам може знадобитися запускати команди докера від імені root
 користувача (`sudo docker run ...`).
@@ -39,24 +43,16 @@ docker rm -f auto_mhddos
 
 Додатково можна передати наступні параметри під час запуску контейнера:
 
-#### `--parallel 3`, `--parallel all`
+#### `--parallel 2`
 
 За замовчуванням: `1`
 
-Скільки цілей атакувати одночасно. Вкажіть `all` для атаки по усім активним цілям.
-
-#### `--restart-interval 1h`
-
-За замовчуванням: `30m`
-
-Мінімально: `15m`
-
-Як часто оновлювати цілі. Можна вказати у хвилинах (`m`), годинах (`h`) або днях (`d`).
-
-#### `--debug false`
-
-За замовчуванням: `true`
-
-Виводити логи чи ні.
+Скільки запускати одночасних атак. Краще збільшувати це число поступово (`1`, `2`, `3`), дивлячись при цьому на навантаження на процесор та оперативну пам'ять, щоб знайти оптимальне значення.
 
 #### Також підтримуються усі параметри з [документації mhddos_proxy](https://github.com/porthole-ascend-cinnamon/mhddos_proxy#usage) (окрім цілей та `-c`)
+
+### Приклад
+
+```shell
+docker run -dit --name auto_mhddos --restart unless-stopped --pull always ghcr.io/theorlovsky/auto_mhddos:latest --parallel 2 -t 2000 --rpc 1000
+```
